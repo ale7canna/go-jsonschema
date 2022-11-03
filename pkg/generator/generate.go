@@ -303,14 +303,15 @@ func (g *schemaGenerator) generateRootType() error {
 
 func (g *schemaGenerator) generateReferencedType(ref string) (codegen.Type, error) {
 	var fileName, scope, defName string
+	prefix := "/$def/"
 	if i := strings.IndexRune(ref, '#'); i == -1 {
 		fileName = ref
 	} else {
 		fileName, scope = ref[0:i], ref[i+1:]
-		if !strings.HasPrefix(strings.ToLower(scope), "/definitions/") {
+		if !strings.HasPrefix(strings.ToLower(scope), prefix) {
 			return nil, fmt.Errorf("unsupported $ref format; must point to definition within file: %q", ref)
 		}
-		defName = scope[13:]
+		defName = scope[len(prefix):]
 	}
 
 	var schema *schemas.Schema
@@ -494,38 +495,38 @@ func (g *schemaGenerator) generateDeclaredType(
 				}
 			}
 
-			g.output.file.Package.AddImport("encoding/json", "")
-			g.output.file.Package.AddDecl(&codegen.Method{
-				Impl: func(out *codegen.Emitter) {
-					out.Comment("UnmarshalJSON implements json.Unmarshaler.")
-					out.Println("func (j *%s) UnmarshalJSON(b []byte) error {", decl.Name)
-					out.Indent(1)
-					out.Println("var %s map[string]interface{}", varNameRawMap)
-					out.Println("if err := json.Unmarshal(b, &%s); err != nil { return err }",
-						varNameRawMap)
-					for _, v := range validators {
-						if v.desc().beforeJSONUnmarshal {
-							v.generate(out)
-						}
-					}
-
-					out.Println("type Plain %s", decl.Name)
-					out.Println("var %s Plain", varNamePlainStruct)
-					out.Println("if err := json.Unmarshal(b, &%s); err != nil { return err }",
-						varNamePlainStruct)
-
-					for _, v := range validators {
-						if !v.desc().beforeJSONUnmarshal {
-							v.generate(out)
-						}
-					}
-
-					out.Println("*j = %s(%s)", decl.Name, varNamePlainStruct)
-					out.Println("return nil")
-					out.Indent(-1)
-					out.Println("}")
-				},
-			})
+			//g.output.file.Package.AddImport("encoding/json", "")
+			//g.output.file.Package.AddDecl(&codegen.Method{
+			//	Impl: func(out *codegen.Emitter) {
+			//		out.Comment("UnmarshalJSON implements json.Unmarshaler.")
+			//		out.Println("func (j *%s) UnmarshalJSON(b []byte) error {", decl.Name)
+			//		out.Indent(1)
+			//		out.Println("var %s map[string]interface{}", varNameRawMap)
+			//		out.Println("if err := json.Unmarshal(b, &%s); err != nil { return err }",
+			//			varNameRawMap)
+			//		for _, v := range validators {
+			//			if v.desc().beforeJSONUnmarshal {
+			//				v.generate(out)
+			//			}
+			//		}
+			//
+			//		out.Println("type Plain %s", decl.Name)
+			//		out.Println("var %s Plain", varNamePlainStruct)
+			//		out.Println("if err := json.Unmarshal(b, &%s); err != nil { return err }",
+			//			varNamePlainStruct)
+			//
+			//		for _, v := range validators {
+			//			if !v.desc().beforeJSONUnmarshal {
+			//				v.generate(out)
+			//			}
+			//		}
+			//
+			//		out.Println("*j = %s(%s)", decl.Name, varNamePlainStruct)
+			//		out.Println("return nil")
+			//		out.Indent(-1)
+			//		out.Println("}")
+			//	},
+			//})
 		}
 	}
 
@@ -813,33 +814,33 @@ func (g *schemaGenerator) generateEnumType(
 	g.output.file.Package.AddImport("fmt", "")
 	g.output.file.Package.AddImport("reflect", "")
 	g.output.file.Package.AddImport("encoding/json", "")
-	g.output.file.Package.AddDecl(&codegen.Method{
-		Impl: func(out *codegen.Emitter) {
-			out.Comment("UnmarshalJSON implements json.Unmarshaler.")
-			out.Println("func (j *%s) UnmarshalJSON(b []byte) error {", enumDecl.Name)
-			out.Indent(1)
-			out.Print("var v ")
-			enumType.Generate(out)
-			out.Newline()
-			varName := "v"
-			if wrapInStruct {
-				varName += ".Value"
-			}
-			out.Println("if err := json.Unmarshal(b, &%s); err != nil { return err }", varName)
-			out.Println("var ok bool")
-			out.Println("for _, expected := range %s {", valueConstant.Name)
-			out.Println("if reflect.DeepEqual(%s, expected) { ok = true; break }", varName)
-			out.Println("}")
-			out.Println("if !ok {")
-			out.Println(`return fmt.Errorf("invalid value (expected one of %%#v): %%#v", %s, %s)`,
-				valueConstant.Name, varName)
-			out.Println("}")
-			out.Println(`*j = %s(v)`, enumDecl.Name)
-			out.Println(`return nil`)
-			out.Indent(-1)
-			out.Println("}")
-		},
-	})
+	//g.output.file.Package.AddDecl(&codegen.Method{
+	//	Impl: func(out *codegen.Emitter) {
+	//		out.Comment("UnmarshalJSON implements json.Unmarshaler.")
+	//		out.Println("func (j *%s) UnmarshalJSON(b []byte) error {", enumDecl.Name)
+	//		out.Indent(1)
+	//		out.Print("var v ")
+	//		enumType.Generate(out)
+	//		out.Newline()
+	//		varName := "v"
+	//		if wrapInStruct {
+	//			varName += ".Value"
+	//		}
+	//		out.Println("if err := json.Unmarshal(b, &%s); err != nil { return err }", varName)
+	//		out.Println("var ok bool")
+	//		out.Println("for _, expected := range %s {", valueConstant.Name)
+	//		out.Println("if reflect.DeepEqual(%s, expected) { ok = true; break }", varName)
+	//		out.Println("}")
+	//		out.Println("if !ok {")
+	//		out.Println(`return fmt.Errorf("invalid value (expected one of %%#v): %%#v", %s, %s)`,
+	//			valueConstant.Name, varName)
+	//		out.Println("}")
+	//		out.Println(`*j = %s(v)`, enumDecl.Name)
+	//		out.Println(`return nil`)
+	//		out.Indent(-1)
+	//		out.Println("}")
+	//	},
+	//})
 
 	// TODO: May be aliased string type
 	if prim, ok := enumType.(codegen.PrimitiveType); ok && prim.Type == "string" {

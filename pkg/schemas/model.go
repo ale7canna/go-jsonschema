@@ -2,7 +2,7 @@
 //
 // Code borrowed from https://github.com/alecthomas/jsonschema/
 //
-// Copyright (C) 2014 Alec Thomas
+// # Copyright (C) 2014 Alec Thomas
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -32,7 +32,7 @@ type Schema struct {
 	*ObjectAsType
 	ID          string      `json:"$id"` // RFC draft-wright-json-schema-01, section-9.2
 	LegacyID    string      `json:"id"`  // RFC draft-wright-json-schema-00, section 4.5
-	Definitions Definitions `json:"definitions,omitempty"`
+	Definitions Definitions `json:"$def,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler for Schema struct
